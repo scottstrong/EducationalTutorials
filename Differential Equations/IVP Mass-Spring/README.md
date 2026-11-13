@@ -6,7 +6,11 @@
 
 This page gets you from the equation
 
-$$m\,y''+b\,y'+k\,y=f(t),\qquad y(t_0)=y_0,\quad y'(t_0)=v_0$$
+
+```math
+m\,y''+b\,y'+k\,y=f(t),\qquad y(t_0)=y_0,\quad y'(t_0)=v_0
+```
+
 
 to a plot of its solution, using MATLAB's built-in solver `ode45`. You will not write any code. You will open one script, change a few numbers at the top, and press Run. The rest of the page explains what the script and the solver are doing, how to check that an answer can be trusted, and what each standard case should look like so you can compare your output against a reference.
 
@@ -52,7 +56,7 @@ The Python (`.py`), R (`.R`), and Mathematica (`.wl`) versions use the same name
 
 ## What "solving numerically" means
 
-For the cases you met in a differential equations course, $`y(t)`$ comes out as a formula. Once the forcing, the coefficients, or the model get more realistic, that stops being possible. A numerical solver gives you something different. It gives you a list of times $`t_0<t_1<t_2<\dots`$ and, at each one, an approximate position $`y_n\approx y(t_n)`$ and velocity $`v_n\approx y'(t_n)`$. Plotting that list is plotting the solution.
+For the cases you met in a differential equations course, $`y(t)`$ comes out as a formula. Once the forcing, the coefficients, or the model get more realistic, that stops being possible. A numerical solver gives you something different. It gives you a list of times $`t_0\lt t_1\lt t_2\lt \dots`$ and, at each one, an approximate position $`y_n\approx y(t_n)`$ and velocity $`v_n\approx y'(t_n)`$. Plotting that list is plotting the solution.
 
 The solver builds the list one step at a time. It knows the state now, it can compute how fast the state is changing, and it uses that to move a short time $`h`$ forward. Then it repeats.
 
@@ -60,18 +64,30 @@ The solver builds the list one step at a time. It knows the state now, it can co
 
 Solvers only take one kind of input, a first-order system $`\vec Y\,'=\vec F(t,\vec Y)`$. A second-order equation is turned into one by giving the velocity its own name,
 
-$$v=y'.$$
+
+```math
+v=y'.
+```
+
 
 Then $`y''=v'`$, and solving the original equation for $`y''`$ gives
 
-$$\begin{aligned}
+
+```math
+\begin{aligned}
 y' &= v,\\
 v' &= \frac{f(t)-b\,v-k\,y}{m}.
-\end{aligned}$$
+\end{aligned}
+```
+
 
 Stack the two unknowns into a **state vector** $`\vec Y=\begin{bmatrix}y\\ v\end{bmatrix}`$. The system says how fast each entry of the state changes, given the time and the current state,
 
-$$\vec Y\,'=\vec F(t,\vec Y)=\begin{bmatrix} v\\[2pt] \dfrac{f(t)-b\,v-k\,y}{m}\end{bmatrix},\qquad \vec Y(t_0)=\begin{bmatrix}y_0\\ v_0\end{bmatrix}.$$
+
+```math
+\vec Y\,'=\vec F(t,\vec Y)=\begin{bmatrix} v\\[2pt] \dfrac{f(t)-b\,v-k\,y}{m}\end{bmatrix},\qquad \vec Y(t_0)=\begin{bmatrix}y_0\\ v_0\end{bmatrix}.
+```
+
 
 That is all a solver needs. Two initial conditions become one initial state, and one second-order equation becomes two first-order equations. Any $`n`$th-order equation can be handled the same way by carrying $`y,\,y',\,\dots,\,y^{(n-1)}`$ in the state.
 
@@ -434,7 +450,11 @@ Every method here does the same thing. Start from the known state $`\vec Y_n`$ a
 
 The simplest choice is **Euler's method**. Compute the slope at the start of the step and follow it in a straight line,
 
-$$\vec Y_{n+1}=\vec Y_n+h\,\vec F(t_n,\vec Y_n).$$
+
+```math
+\vec Y_{n+1}=\vec Y_n+h\,\vec F(t_n,\vec Y_n).
+```
+
 
 This is the definition of the derivative read backwards. Its weakness is that the slope changes during the step and Euler ignores that. The error made over a whole run shrinks only in proportion to $`h`$, so halving the step only halves the error.
 
@@ -442,13 +462,17 @@ This is the definition of the derivative read backwards. Its weakness is that th
 
 The classical **fourth-order Runge-Kutta method (RK4)** samples the slope four times across the step and takes a weighted average.
 
-$$\begin{aligned}
+
+```math
+\begin{aligned}
 \vec k_1 &= \vec F(t_n,\ \vec Y_n)\\
 \vec k_2 &= \vec F\!\left(t_n+\tfrac h2,\ \vec Y_n+\tfrac h2\vec k_1\right)\\
 \vec k_3 &= \vec F\!\left(t_n+\tfrac h2,\ \vec Y_n+\tfrac h2\vec k_2\right)\\
 \vec k_4 &= \vec F\!\left(t_n+h,\ \vec Y_n+h\,\vec k_3\right)\\[4pt]
 \vec Y_{n+1} &= \vec Y_n+\frac h6\left(\vec k_1+2\vec k_2+2\vec k_3+\vec k_4\right)
-\end{aligned}$$
+\end{aligned}
+```
+
 
 The first slope is Euler's. The second and third look at the midpoint of the step, and the fourth looks at the end. The weights $`1,2,2,1`$ are chosen so that the step agrees with the exact solution's Taylor series through the $`h^4`$ term. Over a whole run the error shrinks like $`h^4`$, so halving the step cuts the error by about $`16`$.
 
@@ -533,7 +557,11 @@ A fixed step has to be small enough for the hardest part of the run, which waste
 
 On every step it computes **two** estimates of $`\vec Y_{n+1}`$ from the same set of slope samples, one accurate to fourth order and one to fifth order. (The method is the Dormand-Prince pair, a close relative of RK4 that uses six new slope samples per step.) The two estimates agree closely when the step is small enough and disagree when it is not, so their difference $`\vec e`$ is a free estimate of the error just committed. The step is accepted only if every component passes
 
-$$|e_i|\le\max\big(\texttt{RelTol}\cdot|y_i|,\ \texttt{AbsTol}\big).$$
+
+```math
+|e_i|\le\max\big(\texttt{RelTol}\cdot|y_i|,\ \texttt{AbsTol}\big).
+```
+
 
 If it fails, the step is thrown away and retried with a smaller $`h`$. If it passes easily, the next step is allowed to be larger. The number in `ode45` refers to this 4/5 pair.
 
@@ -612,7 +640,7 @@ Where an exact solution is easy to write down, the table values agree with it. F
 
 The solution is $`y=\cos t`$. With no damping the energy is conserved, so the phase plane is a closed circle traced clockwise over and over.
 
-## Underdamped, $`0<b<2`$
+## Underdamped, $`0\lt b\lt 2`$
 
 ![](figures/ivp-tutorial_underdamped.png)
 
@@ -624,7 +652,7 @@ The mass still oscillates, but each swing is smaller than the last. The amplitud
 
 The fastest return to rest without overshooting. The solution is $`y=(1+t)e^{-t}`$. In the phase plane the curve drops straight into the origin without circling it.
 
-## Overdamped, $`b>2`$
+## Overdamped, $`b\gt 2`$
 
 ![](figures/ivp-tutorial_overdamped.png)
 
@@ -636,7 +664,11 @@ Again no oscillation, but the return is slower than critical damping because the
 
 Starting from rest, the response is a **transient** that dies out plus a **steady-state** oscillation at the driving frequency $`0.8`$ that does not. After about $`t=20`$ only the steady state is left, with amplitude
 
-$$\frac{1}{\sqrt{(k-m\omega^2)^2+(b\,\omega)^2}}=\frac{1}{\sqrt{0.36^2+0.4^2}}\approx1.858.$$
+
+```math
+\frac{1}{\sqrt{(k-m\omega^2)^2+(b\,\omega)^2}}=\frac{1}{\sqrt{0.36^2+0.4^2}}\approx1.858.
+```
+
 
 In the phase plane the spiral settles onto a closed loop, the steady-state orbit.
 
@@ -652,7 +684,11 @@ Driving an undamped spring exactly at its natural frequency adds energy on every
 
 Driving close to, but not at, the natural frequency. The exact solution is
 
-$$y=\frac{\cos(0.9t)-\cos t}{1-0.81}=\frac{2}{0.19}\,\sin(0.95t)\,\sin(0.05t),$$
+
+```math
+y=\frac{\cos(0.9t)-\cos t}{1-0.81}=\frac{2}{0.19}\,\sin(0.95t)\,\sin(0.05t),
+```
+
 
 a fast oscillation inside a slow envelope. The amplitude swells to about $`10.5`$ and dies back to zero every $`\pi/0.05\approx62.8`$ time units. The phase plane fills in a disk instead of tracing one curve.
 
